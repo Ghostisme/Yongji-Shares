@@ -97,3 +97,111 @@ The program will wait for input. Enter data according to the problem format. For
 ## Notes
 - Make sure Python is installed. Run `python --version` in the terminal to verify.
 - If the command is not found, try using `python3` instead of `python`.
+
+## frontend 
+
+# 电商产品详情页 / E-Commerce Product Detail Page
+## 项目简介 / Project Overview
+基于 **Next.js 16 + React 19 + TypeScript + Tailwind CSS 4** 构建的电商产品详情页面，支持产品展示、规格选择（颜色/存储容量）、数量控制、加入购物车等完整交互流程。所有 API 由 Next.js Route Handlers 提供，数据通过 Node.js 端模拟生成，无需外部后端。
+A product detail page built with **Next.js 16 + React 19 + TypeScript + Tailwind CSS 4**. It supports product display, variant selection (color/storage), quantity control, and a full add-to-cart workflow. All APIs are served via Next.js Route Handlers with Node.js-simulated mock data — no external backend required.
+---
+## 技术栈 / Tech Stack
+| 技术 / Technology | 版本 / Version | 用途 / Purpose                              |
+| ----------------- | -------------- | ------------------------------------------- |
+| Next.js           | 16.2.6         | 全栈框架 / Full-stack framework             |
+| React             | 19.2.4         | UI 渲染 / UI rendering                      |
+| TypeScript        | 5.x            | 类型安全 / Type safety                      |
+| Tailwind CSS      | 4.x            | 原子化样式 / Utility-first styling          |
+| ESLint            | 9.x            | 代码规范 / Code linting                     |
+---
+## 环境要求 / Prerequisites
+- **Node.js** >= 18.18.0
+- **npm** >= 9.x（或 yarn / pnpm / bun）
+---
+## 快速开始 / Getting Started
+### 1. 安装依赖 / Install Dependencies
+```bash
+cd frontend
+npm install
+```
+### 2.启动开发服务器 / Start Development Server
+```bash
+npm run dev
+```
+服务启动后访问 / After startup, visit:
+http://localhost:3000
+
+### 3.生产构建 / Production Build
+```bash
+npm run build
+npm run start
+```
+### 4.代码检查 / Lint
+```bash
+npm run lint
+```
+
+### API 文档 / API Documentation
+1.获取产品详情 / Get Product Detail
+```
+GET /api/product/:productId
+```
+成功响应 / Success Response (200):
+```json
+{
+  "success": true,
+  "data": {
+    "productId": "P001",
+    "name": "iPhone 15 Pro Max",
+    "description": "产品描述...",
+    "images": ["https://..."],
+    "specs": [
+      { "name": "颜色", "key": "color", "options": ["原色钛金属", "蓝色钛金属", ...] },
+      { "name": "存储容量", "key": "size", "options": ["256GB", "512GB", "1TB"] }
+    ],
+    "variants": [
+      { "skuId": "SKU-001", "color": "原色钛金属", "size": "256GB", "price": 9999, "stock": 15, "image": "..." }
+    ]
+  }
+}
+```
+失败响应 / Error Response (404):
+```json
+{
+  "success": false,
+  "data": null,
+  "message": "商品不存在"
+}
+```
+2.加入购物车 / Add to Cart
+```
+POST /api/cart
+Content-Type: application/json
+{ "productId": "P001", "skuId": "SKU-001", "quantity": 1 }
+```
+成功响应 / Success Response (200):
+```json
+{
+  "success": true,
+  "cartCount": 3
+}
+```
+失败响应 / Error Response (422):
+```json
+{
+  "success": false,
+  "cartCount": 2,
+  "message": "库存不足"
+}
+```
+3.获取购物车数量 / Get Cart Count
+```
+GET /api/cart
+```
+响应 / Response (200):
+```json
+{
+  "success": true,
+  "cartCount": 2
+}
+```
