@@ -9,15 +9,15 @@ interface UseCartReturn {
   addToCart: (productId: string, skuId: string, quantity: number) => Promise<boolean>;
 }
 
-export function useCart(): UseCartReturn {
+export function useCart(locale?: string): UseCartReturn {
   const [cartCount, setCartCount] = useState(0);
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     cartService.getCount().then((res) => {
       setCartCount(res.cartCount);
-    }).catch((error) => {
-      console.log(error)
+    }).catch(() => {
+      // silently ignore initial cart fetch failure
     });
   }, []);
 
@@ -26,19 +26,19 @@ export function useCart(): UseCartReturn {
       setAdding(true);
 
       try {
-        const res = await cartService.add({ productId, skuId, quantity });
+        const res = await cartService.add({ productId, skuId, quantity }, locale);
 
         if (res.success) {
           setCartCount(res.cartCount);
           return true;
         }
 
-        throw new Error(res.message || '加入购物车失败');
+        throw new Error(res.message || 'Failed to add to cart');
       } finally {
         setAdding(false);
       }
     },
-    []
+    [locale],
   );
 
   return { cartCount, adding, addToCart };

@@ -12,32 +12,42 @@ class ApiError extends Error {
   }
 }
 
-async function request<T>(url: string, options?: RequestInit): Promise<T> {
+async function request<T>(
+  url: string,
+  options?: RequestInit & { locale?: string },
+): Promise<T> {
+  const { locale, ...init } = options ?? {};
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(locale ? { 'Accept-Language': locale } : {}),
+  };
+
   const response = await fetch(`${API_BASE}${url}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
+    ...init,
+    headers: { ...headers, ...(init.headers as Record<string, string> | undefined) },
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new ApiError(data.message || '请求失败，请稍后重试', response.status);
+    throw new ApiError(data.message || 'Request failed', response.status);
   }
 
   return data as T;
 }
 
 export const productService = {
-  getDetail(productId: string) {
-    return request<ProductDetailResponse>(`/product/${productId}`);
+  getDetail(productId: string, locale?: string) {
+    return request<ProductDetailResponse>(`/product/${productId}`, { locale });
   },
 };
 
 export const cartService = {
-  add(item: CartItem) {
+  add(item: CartItem, locale?: string) {
     return request<AddToCartResponse>('/cart', {
       method: 'POST',
       body: JSON.stringify(item),
+      locale,
     });
   },
 

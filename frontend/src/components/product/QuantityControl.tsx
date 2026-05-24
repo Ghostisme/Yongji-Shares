@@ -1,5 +1,7 @@
 'use client';
 
+import { useI18n } from '@/i18n';
+
 interface QuantityControlProps {
   value: number;
   min?: number;
@@ -15,12 +17,13 @@ export function QuantityControl({
   onChange,
   disabled = false,
 }: QuantityControlProps) {
+  const { t } = useI18n();
   const canDecrease = value > min && !disabled;
   const canIncrease = value < max && !disabled;
 
   return (
     <div className="flex items-center">
-      <span className="text-sm text-gray-500 mr-3">数量</span>
+      <span className="text-sm text-gray-500 mr-3">{t('quantity.label')}</span>
       <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
         <button
           onClick={() => canDecrease && onChange(value - 1)}
@@ -31,7 +34,7 @@ export function QuantityControl({
               ? 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
               : 'text-gray-200 cursor-not-allowed'}
           `}
-          aria-label="减少数量"
+          aria-label={t('quantity.decrease')}
         >
           −
         </button>
@@ -49,7 +52,7 @@ export function QuantityControl({
               ? 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
               : 'text-gray-200 cursor-not-allowed'}
           `}
-          aria-label="增加数量"
+          aria-label={t('quantity.increase')}
         >
           +
         </button>
@@ -57,7 +60,7 @@ export function QuantityControl({
 
       {max > 0 && (
         <span className="text-xs text-gray-400 ml-3">
-          库存 {max} 件
+          {t('quantity.stockCount', { count: max })}
         </span>
       )}
     </div>

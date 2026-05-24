@@ -1,5 +1,7 @@
 'use client';
 
+import { useI18n } from '@/i18n';
+
 interface AddToCartButtonProps {
   disabled: boolean;
   loading: boolean;
@@ -13,13 +15,14 @@ export function AddToCartButton({
   outOfStock,
   onClick,
 }: AddToCartButtonProps) {
+  const { t } = useI18n();
   const isDisabled = disabled || loading || outOfStock;
 
   const label = outOfStock
-    ? '暂时缺货'
+    ? t('cart.outOfStock')
     : loading
-      ? '正在添加...'
-      : '加入购物车';
+      ? t('cart.adding')
+      : t('cart.add');
 
   return (
     <button

@@ -19,7 +19,7 @@ interface UseProductReturn {
   reload: () => void;
 }
 
-export function useProduct(productId: string): UseProductReturn {
+export function useProduct(productId: string, locale?: string): UseProductReturn {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export function useProduct(productId: string): UseProductReturn {
     setError(null);
 
     try {
-      const res = await productService.getDetail(productId);
+      const res = await productService.getDetail(productId, locale);
       const data = res.data;
       setProduct(data);
 
@@ -42,12 +42,12 @@ export function useProduct(productId: string): UseProductReturn {
         setSelectedSpecs({ color: first.color, size: first.size });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : '加载商品信息失败';
+      const message = err instanceof Error ? err.message : 'Failed to load product';
       setError(message);
     } finally {
       setLoading(false);
     }
-  }, [productId]);
+  }, [productId, locale]);
 
   useEffect(() => {
     fetchProduct();
@@ -57,14 +57,14 @@ export function useProduct(productId: string): UseProductReturn {
     (key: keyof SelectedSpecs, value: string) => {
       setSelectedSpecs((prev) => ({ ...prev, [key]: value }));
     },
-    []
+    [],
   );
 
   const selectedVariant = useMemo(() => {
     if (!product) return null;
     return (
       product.variants.find(
-        (v) => v.color === selectedSpecs.color && v.size === selectedSpecs.size
+        (v) => v.color === selectedSpecs.color && v.size === selectedSpecs.size,
       ) ?? null
     );
   }, [product, selectedSpecs]);

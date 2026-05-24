@@ -3,9 +3,11 @@
 import { useState, useCallback } from 'react';
 import { useProduct } from '@/hooks/useProduct';
 import { useCart } from '@/hooks/useCart';
+import { useI18n } from '@/i18n';
 import { showToast } from '@/components/ui/Toast';
 import { ProductSkeleton } from '@/components/ui/Skeleton';
 import { ErrorView } from '@/components/ui/ErrorView';
+import { LocaleSwitcher } from '@/components/ui/LocaleSwitcher';
 import { ProductImage } from './ProductImage';
 import { VariantSelector } from './VariantSelector';
 import { QuantityControl } from './QuantityControl';
@@ -18,9 +20,10 @@ interface ProductDetailProps {
 }
 
 export function ProductDetail({ productId }: ProductDetailProps) {
+  const { t, locale } = useI18n();
   const { product, loading, error, selectedVariant, selectedSpecs, selectSpec, reload } =
-    useProduct(productId);
-  const { cartCount, adding, addToCart } = useCart();
+    useProduct(productId, locale);
+  const { cartCount, adding, addToCart } = useCart(locale);
   const [quantity, setQuantity] = useState(1);
 
   const outOfStock = selectedVariant ? selectedVariant.stock === 0 : true;
@@ -32,48 +35,60 @@ export function ProductDetail({ productId }: ProductDetailProps) {
     try {
       const success = await addToCart(product.productId, selectedVariant.skuId, quantity);
       if (success) {
-        showToast('已成功加入购物车', 'success');
+        showToast(t('cart.successMessage'), 'success');
         setQuantity(1);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : '加入购物车失败，请重试';
+      const message = err instanceof Error ? err.message : t('cart.failMessage');
       showToast(message, 'error');
     }
-  }, [product, selectedVariant, outOfStock, quantity, addToCart]);
+  }, [product, selectedVariant, outOfStock, quantity, addToCart, t]);
 
   const handleSpecChange = useCallback(
     (key: 'color' | 'size', value: string) => {
       selectSpec(key, value);
       setQuantity(1);
     },
-    [selectSpec]
+    [selectSpec],
   );
 
   if (loading) return <ProductSkeleton />;
   if (error) return <ErrorView message={error} onRetry={reload} />;
-  if (!product) return <ErrorView message="商品不存在" />;
+  if (!product) return <ErrorView message={t('error.productNotFound')} />;
 
   const displayPrice = selectedVariant?.price ?? product.variants[0]?.price ?? 0;
 
   return (
     <div className="min-h-screen bg-gray-50/50">
+      {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <h1 className="text-base font-semibold text-gray-800 truncate">商品详情</h1>
-          <button className="p-2 -mr-2 hover:bg-gray-100 rounded-xl transition-colors" aria-label="购物车">
-            <CartIcon count={cartCount} />
-          </button>
+          <h1 className="text-base font-semibold text-gray-800 truncate">
+            {t('header.title')}
+          </h1>
+          <div className="flex items-center gap-3">
+            <LocaleSwitcher />
+            <button
+              className="p-2 -mr-2 hover:bg-gray-100 rounded-xl transition-colors"
+              aria-label={t('header.cartLabel')}
+            >
+              <CartIcon count={cartCount} />
+            </button>
+          </div>
         </div>
       </header>
 
+      {/* Content */}
       <main className="max-w-6xl mx-auto px-4 py-6 lg:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          {/* Left: Image */}
           <ProductImage
             images={product.images}
             activeImage={selectedVariant?.image}
             productName={product.name}
           />
 
+          {/* Right: Info */}
           <div className="flex flex-col gap-5">
             <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
               {product.name}
@@ -87,7 +102,9 @@ export function ProductDetail({ productId }: ProductDetailProps) {
             </div>
 
             {selectedVariant && (
-              <p className="text-xs text-gray-400">SKU: {selectedVariant.skuId}</p>
+              <p className="text-xs text-gray-400">
+                {t('product.sku')}: {selectedVariant.skuId}
+              </p>
             )}
 
             <hr className="border-gray-100" />
@@ -118,7 +135,9 @@ export function ProductDetail({ productId }: ProductDetailProps) {
             </div>
 
             <div className="mt-4 pt-5 border-t border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-800 mb-2">商品详情</h3>
+              <h3 className="text-sm font-semibold text-gray-800 mb-2">
+                {t('product.detailSection')}
+              </h3>
               <p className="text-sm text-gray-500 leading-relaxed">
                 {product.description}
               </p>

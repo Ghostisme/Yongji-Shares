@@ -1,20 +1,26 @@
 import { NextResponse } from 'next/server';
-import { getMockProduct } from '@/data/mock';
+import { getMockProduct, getErrorMessage } from '@/data/mock';
+
+function parseLocale(request: Request): 'zh' | 'en' {
+  const lang = request.headers.get('Accept-Language') ?? '';
+  return lang.startsWith('en') ? 'en' : 'zh';
+}
 
 export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ productId: string }> }
+  request: Request,
+  { params }: { params: Promise<{ productId: string }> },
 ) {
   const { productId } = await params;
+  const locale = parseLocale(request);
 
   await new Promise((resolve) => setTimeout(resolve, 600));
 
-  const product = getMockProduct(productId);
+  const product = getMockProduct(productId, locale);
 
   if (!product) {
     return NextResponse.json(
-      { success: false, data: null, message: '商品不存在' },
-      { status: 404 }
+      { success: false, data: null, message: getErrorMessage('productNotFound', locale) },
+      { status: 404 },
     );
   }
 
